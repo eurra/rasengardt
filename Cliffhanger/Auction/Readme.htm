@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title></title>
+		<meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+		<meta name="ProgId" content="VisualStudio.HTML">
+		<meta name="Originator" content="Microsoft Visual Studio .NET 7.1">
+	</head>
+	<body>
+		<H1>Auction System by Arya</H1>
+		<H4>Version 1.0</H4>
+		<P>Table of contents</P>
+		<OL>
+			<LI>
+			Overview
+			<LI>
+			Installation
+			<LI>
+			Configuration
+			<LI>
+			Installed Commands
+			<LI>
+			Creating an auction
+			<LI>
+			Bidding on an auction
+			<LI>
+			Item checks and gold checks
+			<LI>
+			Ambiguous situations and auction messages
+			<LI>
+				Administering the system</LI></OL>
+		<P>1. Overview</P>
+		<P>The auction system is intended to give players a way of safely trading items of 
+			high value. It provides an interface for creating auctions and&nbsp;bidding on 
+			items. The system automatically moves the item auctioned and the money 
+			exchanged through a convenient system of checks that makes sure that both the 
+			seller and the buyer are protected against any risks. The system comes with a 
+			convenient search engine for auctioned items based on text&nbsp;and type 
+			searches, as well as sorting based on a number of conditions.</P>
+		<P>This system is requires an installation of AoS on the server machine to access 
+			localization tables, but is compatible with both AoS and not-AoS shards.</P>
+		<P>2. Installation</P>
+		<P>Installation is pretty straightforward: unzip the contents of the package into 
+			your custom scripts folder. The system doesn't require any core scripts 
+			modifications.</P>
+		<P>Once the system is installed and the server is running, use the [InitAuction 
+			command to create the auction control stone. This is a special item that can 
+			only be constructed using the command. This item is invisible, so it can be 
+			placed pretty much anywhere. Also it cannot be deleted by using the [Remove 
+			command (in such a case it will simply re-create itself). The stone holds all 
+			the information about the system, including all auctions, bids and items. It 
+			can only be deleted using the [DeleteAuction command which will terminate 
+			unsuccesfully all auctions.</P>
+		<P>In order for players to access the system, spawn Auctioner mobiles in your 
+			world. They can access the system by using the 'Buy' context menu on the 
+			Auctioner or by saying the 'auction' keyword.</P>
+		<P>Important : This script requires access to a fully patched cliloc.enu file. To 
+			ensure this, install AoS on the server machine and patch it up. There is still 
+			a chance the script will not find the file because of wrong registry 
+			information. If you have trouble with the system (namely if nothing happens 
+			when you target an item that you wish to auction), specify the path to the 
+			cliloc.enu file manually.
+		</P>
+		<P>3. Configuration</P>
+		<P>A number of parameters are available for configuration in AuctionSystem.cs, in 
+			the Configuration region:</P>
+		<UL>
+			<LI>
+			MessageHue : defines the hue number used by all the messages in the system
+			<LI>
+			m_ForbiddenTypes: defines&nbsp;a list of item types that cannot be sold through 
+			the auction system
+			<LI>
+			DaysForConfirmation: in some cases after the auction has ended, either the 
+			buyer or seller must confirm their will to proceed with the auction. They will 
+			be notified through the messaging system and required to take a decision. If no 
+			decision is taken within a number of days, the auction ends unsuccesfully (item 
+			returned to seller, highest bid returned to bidder). This parameter specifies 
+			the number of days the system will wait before finalizing the auction.
+			<LI>
+			MaxReserveMultiplier: this is a limiting factor on the value of the reserve 
+			which cannot be higher than the starting bid multiplied by this parameter. This 
+			should avoid player exploiting the reserve feature by adding very high reserves 
+			to all auctions and always have the chance to decide whether to sell in the end 
+			or not.
+			<LI>
+			BlackHue : gumps have a weird behaviour when it comes to hues. Simply put they 
+			are not capable to display hue #1 aka pure black, therefore for items hued 1 a 
+			replacemente hue must be used. By default this is a black hue (#2000) in the 
+			OSI hues file. You might need to verify this value if your shard uses a custom 
+			hues.mul.
+			<LI>
+			AllowPetsAuction : true by default, enables auctioning of pets besides items.
+			<LI>
+			AuctionAdminAccessLevel : the minimum AccessLevel required to access 
+			administration functions (Using the [AuctionAdmin command and the staff panel 
+			for each auction).
+			<LI>
+			ClilocLocation : specify the full path for the cliloc.enu file if having 
+			trouble with it.
+			<LI>
+			EnableLogging : true by default, will record all auction activity in 
+			\RunUO\Logs\Auction.
+			<LI>
+			LateBidExtension: when a bid is placed within 5 minutes from the auction end, 
+			and a positive time span is assigned to this option, the duration of the 
+			auction will be extended by the amount specified. By default this is zero ( 
+			TimeSpan.FromMinutes( 0.0 ) ).
+			<LI>
+				CostOfAuction: specifies how much the auction of an item costs (see the code 
+				for details on how to configure this parameter).</LI>
+		</UL>
+		<P>Additional configuration is done using the Props of the control stone:</P>
+		<UL>
+			<LI>
+			MaxAuctionaParAccount: specifies the maximum number of simultaneous auctions a 
+			single account can own.
+			<LI>
+			MinAuctionDays: specifies the minimum number of days an auction must last.
+			<LI>
+				MaxAuctionDays: specifies the maximum number of days an auction can last.</LI></UL>
+		<P>4. Ths auction system includes a number of commands:</P>
+		<UL>
+			<LI>
+			[Admin] InitAuction : this command is used to create the auction control stone 
+			(see: Installation). If a control stone already exists in the world, this 
+			command will teleport the user to the stone location.
+			<LI>
+			[Admin] AuctionAdmin : this displays a panel giving control over the whole 
+			system (delete, perform auction verification, profiling...)
+			<LI>
+			[GameMaster] Auction: brings up the main auction gump. Players have to access 
+			this through the Auctioner NPC.
+			<LI>
+				[Player] MyAuction: brings up a limited auction gump. Players can only access 
+				auctions they're already participating in. They can't use this gump to create 
+				new auctions or to place bids on items they haven't bid on before.</LI></UL>
+		<P>5. Creating an auction</P>
+		<P>In order to create an auction, a player must visit an Auctioner NPC. After 
+			selecting the object they wish to auction, the item will be removed from their 
+			backpack. The user will then have to specify the parameters of the auction:</P>
+		<UL>
+			<LI>
+			Starting bid: the minimum bid accepted for this auction
+			<LI>
+			Duration: the running time for the auction in days
+			<LI>
+			Reserve: a safety value considered when the auction ends. If the highest bid is 
+			higher than the reserve the item is automatically sold, otherwise the owner 
+			will be given the option to withdraw the auction and have the item returned. 
+			The reserve value is not known to the bidder, but only information whether it 
+			has been met or not.
+			<LI>
+			Name: the system will try to guess an appropriate name for the auction. The 
+			user can of course change it to whatever they wish to.
+			<LI>
+			Description: any additional information should be given here. The system will 
+			extract the properties of each item and automatically display them, so there is 
+			no need to write them in this field.
+			<LI>
+				Web link: a web link can be provided optionally</LI></UL>
+		<P>Once the auction is confirmed, it's put into the system and available for 
+			everyone to bid on. Also once created, the auction can no longer be canceled by 
+			the owner.</P>
+		<P>6. Bidding on an auction</P>
+		<P>If&nbsp;a player&nbsp;can bid on an auction,&nbsp;they will see the option in 
+			the lower left area of the auction gump. They must have the required money for 
+			the bid in&nbsp;their bank, which will be withdrawn as soon as&nbsp;the bid is 
+			placed.</P>
+		<P>When a higher bid is placed, the previous highest bidder will receive the money 
+			back in the form of a auction gold check (which will display a gump that will 
+			allow the player to quickly return to the auction).</P>
+		<P>Restrictions on bidding:</P>
+		<UL>
+			<LI>
+			Characters belonging to the same account as the auction owner cannot place bids 
+			on the auction.
+			<LI>
+				Staff cannot place bids but can create auctions.</LI></UL>
+		<P>Players can outbid themselves (for example to meet the reserve).</P>
+		<P>7. Item checks and gold checks</P>
+		<P>Items and gold are moved through the system using checks. A check, when double 
+			clicked, will show the player a gump which will specify the name of the auction 
+			(if the auction still exists in the system, a button will allow the player to 
+			view the auction page), and the reason of the check. A button will allow the 
+			player to claim the gold or item by placing it in their bank.</P>
+		<P>8. Ambiguous situations and auction messages</P>
+		<P>In two situations, when an auction ends, the system will not be able to take a 
+			decision about the outcome:</P>
+		<UL>
+			<LI>
+			Reserve hasn't been met. In this case the auction owner will have to decide 
+			whether to sell or not.
+			<LI>
+				One or more items in the auction no longer exist. This can occur in case of 
+				item wipes or serialization errors. In this case the buyer will be able to 
+				decide whether to purchase or not.</LI></UL>
+		<P>When an auction end with an ambiguous situation a message will be dispatched to 
+			both the owner and the buyer (provided they're online). The system also handles 
+			the Login event, and if the owner or buyer login, they will be presented with a 
+			little notice from the system requesting their input.</P>
+		<P>This situation can last at most at few days, as specified in the auction 
+			configuration.</P>
+		<P>9. Administering the system</P>
+		<P>The system takes little to none administration. Besides to starting and stopping 
+			it, there should be no need to tweak it. The staff can only review bids, but 
+			cannot interfere in an auction itself (by either modifying its parameters or 
+			deleting it).</P>
+	</body>
+</html>

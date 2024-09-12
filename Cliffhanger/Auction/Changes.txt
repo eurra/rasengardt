@@ -1,0 +1,58 @@
+Version 1.8
+
+- Fixed a crash occurring when the system delivered a check to a player whose backpack has been deleted.
+- Fixed a crash with the control stone properties list when the system wasn't running.
+- 1.0 Compatibility fix (no more EmptyArrayList warning on the console when creating auctions/moving items into the system).
+- Added option to extend the duration of the auction if a bid is placed within 5 minutes from the end. (default: no late bid extension)
+- Added an option to charge for the auction service (either a fixed value, or a percentage cost. default: no charge)
+- For those running localized versions: 3 new entries in the string table (228-230).
+
+Version 1.7.7
+
+- Fixed max number of auctions parameter to behave correctly.
+- When a player retrieves an item that's a container, the item count and weight should be correctly updated.
+
+Version 1.7.6
+
+- Fixed potential gump-related crash
+
+Version 1.7.5
+
+- Threaded operations lock the World.Items and World.Mobiles objects. This should address some cases where the system would cause a crash on world save.
+- All gumps now register available buttons. This should fix the malicious crash that could be caused using a razor macro on the system gumps.
+- Pets should no longer go wild when stored in the system (hopefully)
+- Fixed crash associated with text search (hopefully)
+
+
+Version 1.7
+
+- Added option the specify the location of the cliloc.enu file
+- Buy Now function implemented
+- Gold checks will now use the Banker.Desposit() method to deliver money (allowing any amount of money to be safely transferred.
+- Fixed an issue with the auction props and the highest bid. Now this will display two new fields (HighestBidder and HighestBidValue).
+- Fixed overflow when setting a duration that's too long
+- Added a staff control panel for each auction. Access to this panel is configured through the AuctionAdminAccessLevel parameter.
+- Added logging (enabled by default, disable in AuctionSystem.cs Configuration region). Will log all activity to RunUO\Logs\Auction.
+- When the cliloc.enu can't be found, the system will output a message on the console.
+
+
+Version 1.6
+
+- The system will now also trade creatures. The following restrictions apply on pet auctions:
+1. You must own the pet.
+2. No summoned, dead or animated pets allowed.
+3. When claiming the pet, it will go to your stable and you will need a free stable slot.
+- When the pet or item is deleted from the world due to a wipe, the auction is ended by default and the money returned to the highest bidder.
+- Removed the DeleteAuction command (see AuctionAdmin)
+- Added an administration gump accessible through the [AuctionAdmin command:
+
+The admin gump displays the number of running and pending auctions, and the next deadling (that is whenever the next automtic check will occur and verify all expried auctions).
+
+Functions:
+
+1. Profiling: will print a file to \RunUO\AuctionProfile.txt with all the relevant information about the system.
+2. Force Verify: will perform a verification and end all expired auctions.
+3. Temporarily Shut Down: this will disable the auction system until the next reboot
+4. Permanently Shut Down: deletes the system (formerly DeleteAuction command).
+
+- Mode admin functions. Staff can now delete on the fly a particular auction from its view gump (Delete button). Staff can also view various auction properties through the Props button in the view gump.
